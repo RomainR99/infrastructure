@@ -1,6 +1,10 @@
 // server.js
 import app from './app.js'  // Importer l'instance Express depuis app.js
 import ENV from './config/env.js'  // Importer la configuration
+import candidatureRoutes from './routes/candidatures.routes.js';
+
+// Middleware pour les routes personnalisées
+app.use('/api/candidatures', candidatureRoutes);
 
 // Données fictives pour l'exemple
 let data = [

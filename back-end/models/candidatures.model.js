@@ -1,30 +1,39 @@
 import mongoose from 'mongoose';
 
-const candidatureShema = mongoose.Schema(
+const CandidatureSchema = new mongoose.Schema(
   {
     entreprise: {
       type: String,
-      minLength: 3,
-      required: true
+      required: true,
+      minLength: 2,
+      trim: true
     },
-    name: {
+    poste: {
       type: String,
-      required: true
+      required: true,
+      minLength: 2,
+      trim: true
     },
     email: {
       type: String,
       required: true,
-      match: /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/ // Validation d'email
+      lowercase: true,
+      trim: true,
+      match: /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/ // Validation email
     },
-    phone: {
+    statut: {
       type: String,
-      required: true,
-      match: /^[0-9]{10}$/ // Validation pour un n°tel , doit etre de 10 chiffres
+      enum: ["En attente", "Acceptée", "Refusée"],
+      default: "En attente"
     },
-    status: {
+    dateEntretien: {
+      type: Date,
+      default: null // Peut être rempli plus tard
+    },
+    commentaire: {
       type: String,
-      enum: ['en attente', 'accepter', 'refuser'],
-      default: 'en attente'
+      default: '',
+      trim: true
     }
   },
   {
@@ -32,6 +41,7 @@ const candidatureShema = mongoose.Schema(
   }
 );
 
-export default mongoose.model('candidatures', candidatureShema);
+export default mongoose.model("Candidature", CandidatureSchema);
+
 
 //Le champ timestamps: true permet de générer automatiquement les champs createdAt et updatedAt //pour chaque document.

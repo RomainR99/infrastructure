@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
 const DataTable = () => {
@@ -7,6 +7,7 @@ const DataTable = () => {
   const [formData, setFormData] = useState({ entreprise: "", name: "", email: "", phone: "" });
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [filtre, setFiltre] = useState(""); // <-- 🔥 Ajout du filtre ici
   const outsideClick = useRef(null);
   const itemsPerPage = 5;
   const [error, setError] = useState(null);
@@ -114,7 +115,7 @@ const DataTable = () => {
   const filteredItems = data.filter((item) =>
     item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  
+
   const filteredData = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
@@ -146,34 +147,18 @@ const DataTable = () => {
           <tbody>
             {filteredData.map((item) => (
               <tr key={item._id}>
-                <td>
-                  {editId === item._id ? (
+                <td>{editId === item._id ? (
                     <input type="text" name="entreprise" value={editForm.entreprise} onChange={handleEditChange} />
-                  ) : (
-                    item.entreprise
-                  )}
-                </td>
-                <td>
-                  {editId === item._id ? (
+                  ) : item.entreprise}</td>
+                <td>{editId === item._id ? (
                     <input type="text" name="name" value={editForm.name} onChange={handleEditChange} />
-                  ) : (
-                    item.name
-                  )}
-                </td>
-                <td>
-                  {editId === item._id ? (
+                  ) : item.name}</td>
+                <td>{editId === item._id ? (
                     <input type="email" name="email" value={editForm.email} onChange={handleEditChange} />
-                  ) : (
-                    item.email
-                  )}
-                </td>
-                <td>
-                  {editId === item._id ? (
+                  ) : item.email}</td>
+                <td>{editId === item._id ? (
                     <input type="text" name="phone" value={editForm.phone} onChange={handleEditChange} />
-                  ) : (
-                    item.phone
-                  )}
-                </td>
+                  ) : item.phone}</td>
                 <td className="actions">
                   {editId === item._id ? (
                     <button className="save" onClick={() => handleEditSave(item._id)}>Sauvegarder</button>
@@ -186,6 +171,7 @@ const DataTable = () => {
             ))}
           </tbody>
         </table>
+
         <div className="pagination">
           {Array.from({ length: Math.ceil(filteredItems.length / itemsPerPage) }, (_, index) => (
             <button
@@ -197,6 +183,26 @@ const DataTable = () => {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* 🔽 Bloc Liste des Candidatures filtrées */}
+      <div style={{ marginTop: "2rem" }}>
+        <h2>Liste des Candidatures</h2>
+        <select onChange={(e) => setFiltre(e.target.value)} value={filtre}>
+          <option value="">Tous</option>
+          <option value="En attente">En attente</option>
+          <option value="Acceptée">Acceptée</option>
+          <option value="Refusée">Refusée</option>
+        </select>
+        <ul>
+          {data
+            .filter(c => !filtre || c.statut === filtre)
+            .map((candidature) => (
+              <li key={candidature._id}>
+                {candidature.entreprise} - {candidature.poste} - {candidature.statut}
+              </li>
+            ))}
+        </ul>
       </div>
     </div>
   );
