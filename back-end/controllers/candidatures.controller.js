@@ -74,13 +74,13 @@ export const getStats = async (req, res) => {
       const aggregation = await ModelCandidature.aggregate([
         {
           $group: {
-            _id: "$statut",
+            _id: "$statut",       // Regroupe par le champ "statut"
             count: { $sum: 1 }
           }
         }
       ]);
   
-      // Initialiser les valeurs à 0
+      // Initialisation des stats à 0
       const stats = {
         total: 0,
         enAttente: 0,
@@ -90,9 +90,17 @@ export const getStats = async (req, res) => {
   
       aggregation.forEach(item => {
         stats.total += item.count;
-        if (item._id === "En attente") stats.enAttente = item.count;
-        if (item._id === "Acceptée") stats.acceptees = item.count;
-        if (item._id === "Refusée") stats.refusees = item.count;
+        switch(item._id) {
+          case "En attente":
+            stats.enAttente = item.count;
+            break;
+          case "Acceptée":
+            stats.acceptees = item.count;
+            break;
+          case "Refusée":
+            stats.refusees = item.count;
+            break;
+        }
       });
   
       res.status(200).json(stats);
@@ -101,4 +109,5 @@ export const getStats = async (req, res) => {
       res.status(500).json({ message: "Erreur lors de la récupération des statistiques", error: error.message });
     }
   };
+  
   

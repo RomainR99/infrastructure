@@ -1,7 +1,7 @@
 import ENV from './config/env.js'
 import express from 'express'
 import connectMongoDB from './config/dbMongo.js'
-import candidaturesRouter from './router/candidature.router.js'
+import candidaturesRouter from './routes/candidatures.routes.js'
 import cors from 'cors'
 
 const app = express()
