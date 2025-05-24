@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
 
 const Statistiques = () => {
-  const [stats, setStats] = useState({ total: 0, enAttente: 0, acceptees: 0, refusees: 0 });
+  const [stats, setStats] = useState({
+    total: 0,
+    enAttente: 0,
+    acceptees: 0,
+    refusees: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("/api/stats")
+    fetch("http://localhost:8000/api/candidatures/stats")
       .then((res) => {
         if (!res.ok) throw new Error("Erreur serveur");
         return res.json();
@@ -39,3 +44,4 @@ const Statistiques = () => {
 };
 
 export default Statistiques;
+

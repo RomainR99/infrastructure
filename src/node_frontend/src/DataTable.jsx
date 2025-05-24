@@ -4,10 +4,10 @@ import axios from "axios";
 const DataTable = () => {
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
-  const [formData, setFormData] = useState({ entreprise: "", name: "", email: "", phone: "" });
+  const [formData, setFormData] = useState({ entreprise: "", poste: "", email: "" });
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [filtre, setFiltre] = useState(""); // <-- 🔥 Ajout du filtre ici
+  const [filtre, setFiltre] = useState("");
   const outsideClick = useRef(null);
   const itemsPerPage = 5;
   const [error, setError] = useState(null);
@@ -30,7 +30,7 @@ const DataTable = () => {
   }, []);
 
   useEffect(() => {
-    axios.get("http://localhost:8000/api/candidatures/get")
+    axios.get("http://localhost:8000/api/candidatures")
       .then((response) => {
         if (Array.isArray(response.data)) {
           setData(response.data);
@@ -54,26 +54,27 @@ const DataTable = () => {
   };
 
   const handleAddClick = () => {
-    if (!formData.entreprise || formData.entreprise.length < 3 ||
-        !formData.name || formData.name.length < 3 ||
-        !formData.email || formData.email.length < 5 ||
-        !formData.phone || formData.phone.length < 3) {
+    if (
+      !formData.entreprise || formData.entreprise.length < 2 ||
+      !formData.poste || formData.poste.length < 2 ||
+      !formData.email || formData.email.length < 5
+    ) {
       setError("Tous les champs doivent être remplis correctement !");
       return;
     }
 
-    axios.post("http://localhost:8000/api/candidatures/post", formData, {
-        headers: { "Content-Type": "application/json" },
-      })
-      .then((response) => {
-        setData((prevData) => [...prevData, response.data]);
-        setFormData({ entreprise: "", name: "", email: "", phone: "" });
-        setError(null);
-      })
-      .catch((err) => {
-        setError("Erreur lors de l'ajout");
-        console.error(err);
-      });
+    axios.post("http://localhost:8000/api/candidatures", formData, {
+      headers: { "Content-Type": "application/json" },
+    })
+    .then((response) => {
+      setData((prevData) => [...prevData, response.data]);
+      setFormData({ entreprise: "", poste: "", email: "" });
+      setError(null);
+    })
+    .catch((err) => {
+      setError("Erreur lors de l'ajout");
+      console.error(err);
+    });
   };
 
   const handleEditClick = (item) => {
@@ -112,35 +113,60 @@ const DataTable = () => {
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+
+  // Recherche sur poste
   const filteredItems = data.filter((item) =>
-    item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    item.poste && item.poste.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const filteredData = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
+  console.log("Données chargées:", data);
 
   return (
     <div className="container">
       {error && <div className="error-message">{error}</div>}
-      
+
       <div className="add-container">
         <div className="info-container">
-          <input type="text" placeholder="Entreprise" name="entreprise" value={formData.entreprise} onChange={handleInputChange} />
-          <input type="text" placeholder="Nom" name="name" value={formData.name} onChange={handleInputChange} />
-          <input type="email" placeholder="Email" name="email" value={formData.email} onChange={handleInputChange} />
-          <input type="text" placeholder="Téléphone" name="phone" value={formData.phone} onChange={handleInputChange} />
+          <input
+            type="text"
+            placeholder="Entreprise"
+            name="entreprise"
+            value={formData.entreprise}
+            onChange={handleInputChange}
+          />
+          <input
+            type="text"
+            placeholder="Poste"
+            name="poste"
+            value={formData.poste}
+            onChange={handleInputChange}
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+          />
         </div>
         <button className="add" onClick={handleAddClick}>Ajouter</button>
       </div>
 
       <div className="search-table-container">
-        <input className="search-input" type="text" placeholder="Recherche par nom" value={searchTerm} onChange={handleSearch} />
+        <input
+          className="search-input"
+          type="text"
+          placeholder="Recherche par poste"
+          value={searchTerm}
+          onChange={handleSearch}
+        />
         <table ref={outsideClick}>
           <thead>
             <tr>
               <th>Entreprise</th>
-              <th>Nom</th>
+              <th>Poste</th>
               <th>Email</th>
-              <th>Téléphone</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -148,17 +174,29 @@ const DataTable = () => {
             {filteredData.map((item) => (
               <tr key={item._id}>
                 <td>{editId === item._id ? (
-                    <input type="text" name="entreprise" value={editForm.entreprise} onChange={handleEditChange} />
-                  ) : item.entreprise}</td>
+                  <input
+                    type="text"
+                    name="entreprise"
+                    value={editForm.entreprise}
+                    onChange={handleEditChange}
+                  />
+                ) : item.entreprise}</td>
                 <td>{editId === item._id ? (
-                    <input type="text" name="name" value={editForm.name} onChange={handleEditChange} />
-                  ) : item.name}</td>
+                  <input
+                    type="text"
+                    name="poste"
+                    value={editForm.poste}
+                    onChange={handleEditChange}
+                  />
+                ) : item.poste}</td>
                 <td>{editId === item._id ? (
-                    <input type="email" name="email" value={editForm.email} onChange={handleEditChange} />
-                  ) : item.email}</td>
-                <td>{editId === item._id ? (
-                    <input type="text" name="phone" value={editForm.phone} onChange={handleEditChange} />
-                  ) : item.phone}</td>
+                  <input
+                    type="email"
+                    name="email"
+                    value={editForm.email}
+                    onChange={handleEditChange}
+                  />
+                ) : item.email}</td>
                 <td className="actions">
                   {editId === item._id ? (
                     <button className="save" onClick={() => handleEditSave(item._id)}>Sauvegarder</button>
@@ -185,7 +223,6 @@ const DataTable = () => {
         </div>
       </div>
 
-      {/* 🔽 Bloc Liste des Candidatures filtrées */}
       <div style={{ marginTop: "2rem" }}>
         <h2>Liste des Candidatures</h2>
         <select onChange={(e) => setFiltre(e.target.value)} value={filtre}>
@@ -209,4 +246,5 @@ const DataTable = () => {
 };
 
 export default DataTable;
+
 
