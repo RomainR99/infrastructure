@@ -17,28 +17,29 @@ router.post('/', createCandidature);
 
 /**
  * @route   GET /api/candidatures
- * @desc    Lire toutes les candidatures (filtrage via query possible)
+ * @desc    Lire toutes les candidatures (avec options de filtre)
  */
 router.get('/', readCandidature);
 
 /**
  * @route   GET /api/candidatures/stats
- * @desc    Obtenir des statistiques sur les candidatures
+ * @desc    Obtenir des statistiques de candidatures
  */
 router.get('/stats', getStats);
 
 /**
  * @route   PUT /api/candidatures/:id
- * @desc    Mettre à jour une candidature existante par ID
+ * @desc    Mettre à jour une candidature existante
  */
 router.put('/:id', updateCandidature);
 
 /**
  * @route   DELETE /api/candidatures/:id
- * @desc    Supprimer une candidature par ID
+ * @desc    Supprimer une candidature
  */
 router.delete('/:id', deleteCandidature);
 
 export default router;
+
 
 

@@ -4,14 +4,21 @@ import axios from "axios";
 const DataTable = () => {
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
-  const [formData, setFormData] = useState({ entreprise: "", poste: "", email: "" });
+  const [formData, setFormData] = useState({
+    entreprise: "",
+    poste: "",
+    email: "",
+    phone: "",
+    status: "en attente",
+    name: "",
+    dateEntretien: "",  // Ajout du champ dateEntretien
+  });
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [filtre, setFiltre] = useState("");
-  const outsideClick = useRef(null);
-  const itemsPerPage = 5;
   const [error, setError] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const outsideClick = useRef(null);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     setCurrentPage(1);
@@ -35,13 +42,11 @@ const DataTable = () => {
         if (Array.isArray(response.data)) {
           setData(response.data);
         } else {
-          console.error("Données invalides :", response.data);
           setError("Erreur lors du chargement des données");
         }
       })
-      .catch((err) => {
+      .catch(() => {
         setError("Erreur lors du chargement des données");
-        console.error(err);
       });
   }, []);
 
@@ -54,32 +59,58 @@ const DataTable = () => {
   };
 
   const handleAddClick = () => {
+    console.log("Avant validation, formData =", formData);
+
     if (
-      !formData.entreprise || formData.entreprise.length < 2 ||
-      !formData.poste || formData.poste.length < 2 ||
-      !formData.email || formData.email.length < 5
+      !formData.entreprise || formData.entreprise.trim().length < 2 ||
+      !formData.poste || formData.poste.trim().length < 2 ||
+      !formData.email || formData.email.trim().length < 5 ||
+      !formData.phone || formData.phone.trim().length < 5 ||
+      !formData.name || formData.name.trim().length < 2
     ) {
       setError("Tous les champs doivent être remplis correctement !");
       return;
     }
 
-    axios.post("http://localhost:8000/api/candidatures", formData, {
+    if (!formData.dateEntretien) {
+      setError("La date d'entretien est obligatoire !");
+      return;
+    }
+
+    // Nettoyer les données avant envoi (trim)
+    const payload = {
+      entreprise: formData.entreprise.trim(),
+      poste: formData.poste.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      status: formData.status,
+      name: formData.name.trim(),
+      dateEntretien: formData.dateEntretien,
+    };
+
+    console.log("phone:", formData.phone);
+
+    console.log("Données envoyées en POST:", payload);
+
+    axios.post("http://localhost:8000/api/candidatures", payload, {
       headers: { "Content-Type": "application/json" },
     })
-    .then((response) => {
-      setData((prevData) => [...prevData, response.data]);
-      setFormData({ entreprise: "", poste: "", email: "" });
-      setError(null);
-    })
-    .catch((err) => {
-      setError("Erreur lors de l'ajout");
-      console.error(err);
-    });
+      .then((response) => {
+        console.log("Réponse serveur POST:", response.data);
+        // ajouter le nouvel item (data) depuis response.data.data
+        setData((prevData) => [...prevData, response.data.data || response.data]);
+        setFormData({ entreprise: "", poste: "", email: "", status: "en attente", phone: "", name: "", dateEntretien: "" });
+        setError(null);
+      })
+      .catch((err) => {
+        setError("Erreur lors de l'ajout");
+        console.error("Erreur POST:", err.response?.data || err);
+      });
   };
 
   const handleEditClick = (item) => {
     setEditId(item._id);
-    setEditForm(item);
+    setEditForm({ ...item });
   };
 
   const handleEditChange = (e) => {
@@ -87,16 +118,18 @@ const DataTable = () => {
   };
 
   const handleEditSave = (id) => {
+    console.log("Données envoyées à PUT:", editForm);
     axios.put(`http://localhost:8000/api/candidatures/${id}`, editForm)
       .then(() => {
         setData((prevData) =>
           prevData.map((item) => (item._id === id ? { ...item, ...editForm } : item))
         );
         setEditId(null);
+        setError(null);
       })
       .catch((err) => {
         setError("Erreur lors de la modification");
-        console.error(err);
+        console.error(err.response?.data || err);
       });
   };
 
@@ -104,23 +137,21 @@ const DataTable = () => {
     axios.delete(`http://localhost:8000/api/candidatures/${id}`)
       .then(() => {
         setData((prevData) => prevData.filter((item) => item._id !== id));
+        setError(null);
       })
-      .catch((err) => {
+      .catch(() => {
         setError("Erreur lors de la suppression");
-        console.error(err);
       });
   };
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
 
-  // Recherche sur poste
   const filteredItems = data.filter((item) =>
     item.poste && item.poste.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const filteredData = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
-  console.log("Données chargées:", data);
 
   return (
     <div className="container">
@@ -137,6 +168,13 @@ const DataTable = () => {
           />
           <input
             type="text"
+            placeholder="Nom"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+          />
+          <input
+            type="text"
             placeholder="Poste"
             name="poste"
             value={formData.poste}
@@ -147,6 +185,26 @@ const DataTable = () => {
             placeholder="Email"
             name="email"
             value={formData.email}
+            onChange={handleInputChange}
+          />
+          <input
+            type="text"
+            placeholder="Téléphone"
+            name="phone"
+            value={formData.phone}
+            onChange={handleInputChange}
+          />
+          <select name="status" value={formData.status} onChange={handleInputChange}>
+            <option value="en attente">En attente</option>
+            <option value="accepté">Accepté</option>
+            <option value="refusé">Refusé</option>
+          </select>
+
+          {/* Champ dateEntretien */}
+          <input
+            type="date"
+            name="dateEntretien"
+            value={formData.dateEntretien}
             onChange={handleInputChange}
           />
         </div>
@@ -165,38 +223,89 @@ const DataTable = () => {
           <thead>
             <tr>
               <th>Entreprise</th>
+              <th>Nom</th>
               <th>Poste</th>
               <th>Email</th>
+              <th>Téléphone</th>
+              <th>Statut</th>
+              <th>Date Entretien</th> 
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {filteredData.map((item) => (
               <tr key={item._id}>
-                <td>{editId === item._id ? (
-                  <input
-                    type="text"
-                    name="entreprise"
-                    value={editForm.entreprise}
-                    onChange={handleEditChange}
-                  />
-                ) : item.entreprise}</td>
-                <td>{editId === item._id ? (
-                  <input
-                    type="text"
-                    name="poste"
-                    value={editForm.poste}
-                    onChange={handleEditChange}
-                  />
-                ) : item.poste}</td>
-                <td>{editId === item._id ? (
-                  <input
-                    type="email"
-                    name="email"
-                    value={editForm.email}
-                    onChange={handleEditChange}
-                  />
-                ) : item.email}</td>
+                <td>
+                  {editId === item._id ? (
+                    <input
+                      type="text"
+                      name="entreprise"
+                      value={editForm.entreprise}
+                      onChange={handleEditChange}
+                    />
+                  ) : item.entreprise}
+                </td>
+                <td>
+                  {editId === item._id ? (
+                    <input
+                      type="text"
+                      name="name"
+                      value={editForm.name}
+                      onChange={handleEditChange}
+                    />
+                  ) : item.name}
+                </td>
+                <td>
+                  {editId === item._id ? (
+                    <input
+                      type="text"
+                      name="poste"
+                      value={editForm.poste}
+                      onChange={handleEditChange}
+                    />
+                  ) : item.poste}
+                </td>
+                <td>
+                  {editId === item._id ? (
+                    <input
+                      type="email"
+                      name="email"
+                      value={editForm.email}
+                      onChange={handleEditChange}
+                    />
+                  ) : item.email}
+                </td>
+                <td>
+                  {editId === item._id ? (
+                    <input
+                      type="text"
+                      name="phone"
+                      value={editForm.phone}
+                      onChange={handleEditChange}
+                    />
+                  ) : item.phone}
+                </td>
+                <td>
+                  {editId === item._id ? (
+                    <select name="status" value={editForm.status} onChange={handleEditChange}>
+                      <option value="en attente">En attente</option>
+                      <option value="accepté">Accepté</option>
+                      <option value="refusé">Refusé</option>
+                    </select>
+                  ) : item.status}
+                </td>
+                <td>
+                  {editId === item._id ? (
+                    <input
+                      type="date"
+                      name="dateEntretien"
+                      value={editForm.dateEntretien ? editForm.dateEntretien.slice(0, 10) : ""}
+                      onChange={handleEditChange}
+                    />
+                  ) : (
+                    item.dateEntretien ? new Date(item.dateEntretien).toLocaleDateString() : ""
+                  )}
+                </td>
                 <td className="actions">
                   {editId === item._id ? (
                     <button className="save" onClick={() => handleEditSave(item._id)}>Sauvegarder</button>
@@ -214,37 +323,21 @@ const DataTable = () => {
           {Array.from({ length: Math.ceil(filteredItems.length / itemsPerPage) }, (_, index) => (
             <button
               key={index + 1}
-              style={{ backgroundColor: currentPage === index + 1 ? "lightgreen" : "" }}
               onClick={() => paginate(index + 1)}
+              className={currentPage === index + 1 ? "active" : ""}
             >
               {index + 1}
             </button>
           ))}
         </div>
       </div>
-
-      <div style={{ marginTop: "2rem" }}>
-        <h2>Liste des Candidatures</h2>
-        <select onChange={(e) => setFiltre(e.target.value)} value={filtre}>
-          <option value="">Tous</option>
-          <option value="En attente">En attente</option>
-          <option value="Acceptée">Acceptée</option>
-          <option value="Refusée">Refusée</option>
-        </select>
-        <ul>
-          {data
-            .filter(c => !filtre || c.statut === filtre)
-            .map((candidature) => (
-              <li key={candidature._id}>
-                {candidature.entreprise} - {candidature.poste} - {candidature.statut}
-              </li>
-            ))}
-        </ul>
-      </div>
     </div>
   );
 };
 
 export default DataTable;
+
+
+
 
 

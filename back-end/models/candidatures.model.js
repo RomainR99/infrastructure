@@ -1,47 +1,42 @@
 import mongoose from 'mongoose';
 
-const CandidatureSchema = new mongoose.Schema(
+const candidatureShema = mongoose.Schema(
   {
     entreprise: {
       type: String,
-      required: true,
-      minLength: 2,
-      trim: true
+      minLength: 3,
+      required: true
     },
-    poste: {
+    name: {
       type: String,
-      required: true,
-      minLength: 2,
-      trim: true
+      required: true
     },
     email: {
       type: String,
       required: true,
-      lowercase: true,
-      trim: true,
-      match: /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/ // Validation email
+      match: /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/ // Validation d'email
     },
-    statut: {
+    phone: {
       type: String,
-      enum: ["En attente", "Acceptée", "Refusée"],
-      default: "En attente"
+      required: true,
+      match: /^[0-9]{10}$/ // Validation pour un n°tel , doit etre de 10 chiffres
     },
-    dateEntretien: {
-      type: Date,
-      default: null // Peut être rempli plus tard
-    },
-    commentaire: {
+    status: {
       type: String,
-      default: '',
-      trim: true
-    }
+      enum: ['en attente', 'accepter', 'refuser'],
+      default: 'en attente'
+    },
+    poste: {
+      type: String,
+      required: true
+    },
+    
   },
   {
     timestamps: true // Ajoute createdAt et updatedAt automatiquement
   }
 );
 
-export default mongoose.model("Candidature", CandidatureSchema);
-
+export default mongoose.model('candidatures', candidatureShema);
 
 //Le champ timestamps: true permet de générer automatiquement les champs createdAt et updatedAt //pour chaque document.

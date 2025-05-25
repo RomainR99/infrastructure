@@ -18,7 +18,7 @@ const CandidatureList = () => {
 
   return (
     <div>
-      <h2>Liste des Candidatures</h2>
+      <h2>Liste des Candidaturess</h2>
       <select onChange={(e) => setFiltre(e.target.value)}>
         <option value="">Tous</option>
         <option value="En attente">En attente</option>
