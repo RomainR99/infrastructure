@@ -11,7 +11,7 @@ const DataTable = () => {
     phone: "",
     status: "en attente",
     name: "",
-    dateEntretien: "",  // Ajout du champ dateEntretien
+    dateEntretien: "",
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -59,8 +59,6 @@ const DataTable = () => {
   };
 
   const handleAddClick = () => {
-    console.log("Avant validation, formData =", formData);
-
     if (
       !formData.entreprise || formData.entreprise.trim().length < 2 ||
       !formData.poste || formData.poste.trim().length < 2 ||
@@ -77,7 +75,6 @@ const DataTable = () => {
       return;
     }
 
-    // Nettoyer les données avant envoi (trim)
     const payload = {
       entreprise: formData.entreprise.trim(),
       poste: formData.poste.trim(),
@@ -88,18 +85,22 @@ const DataTable = () => {
       dateEntretien: formData.dateEntretien,
     };
 
-    console.log("phone:", formData.phone);
-
-    console.log("Données envoyées en POST:", payload);
-
     axios.post("http://localhost:8000/api/candidatures", payload, {
       headers: { "Content-Type": "application/json" },
     })
       .then((response) => {
-        console.log("Réponse serveur POST:", response.data);
-        // ajouter le nouvel item (data) depuis response.data.data
-        setData((prevData) => [...prevData, response.data.data || response.data]);
-        setFormData({ entreprise: "", poste: "", email: "", status: "en attente", phone: "", name: "", dateEntretien: "" });
+        const newItem = response.data.data || response.data;
+        console.log("Item ajouté :", newItem);
+        setData((prevData) => [...prevData, newItem]);
+        setFormData({
+          entreprise: "",
+          poste: "",
+          email: "",
+          status: "en attente",
+          phone: "",
+          name: "",
+          dateEntretien: ""
+        });
         setError(null);
       })
       .catch((err) => {
@@ -118,7 +119,6 @@ const DataTable = () => {
   };
 
   const handleEditSave = (id) => {
-    console.log("Données envoyées à PUT:", editForm);
     axios.put(`http://localhost:8000/api/candidatures/${id}`, editForm)
       .then(() => {
         setData((prevData) =>
@@ -199,8 +199,6 @@ const DataTable = () => {
             <option value="accepté">Accepté</option>
             <option value="refusé">Refusé</option>
           </select>
-
-          {/* Champ dateEntretien */}
           <input
             type="date"
             name="dateEntretien"
@@ -228,7 +226,7 @@ const DataTable = () => {
               <th>Email</th>
               <th>Téléphone</th>
               <th>Statut</th>
-              <th>Date Entretien</th> 
+              <th>Date Entretien</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -336,6 +334,7 @@ const DataTable = () => {
 };
 
 export default DataTable;
+
 
 
 

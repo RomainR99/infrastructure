@@ -5,10 +5,10 @@ const cors = require("cors");
 const app = express();
 const port = 8000;
 
-app.use(cors()); // Autoriser les requêtes depuis le frontend
-app.use(bodyParser.json()); // Parser les requêtes JSON
+app.use(cors());
+app.use(bodyParser.json());
 
-let data = []; // Stockage temporaire des données
+let data = [];
 
 // Récupérer toutes les entrées
 app.get("/api/data", (req, res) => {
@@ -17,9 +17,18 @@ app.get("/api/data", (req, res) => {
 
 // Ajouter une nouvelle entrée
 app.post("/api/data", (req, res) => {
-  const { name, email, phone } = req.body;
+  const {
+    name,
+    email,
+    phone,
+    entreprise,
+    poste,
+    status,
+    dateEntretien,
+  } = req.body;
 
-  if (!name || !email || !phone) {
+  // Vérification des champs requis
+  if (!name || !email || !phone || !entreprise || !poste || !dateEntretien) {
     return res.status(400).json({ error: "Tous les champs sont requis." });
   }
 
@@ -28,6 +37,10 @@ app.post("/api/data", (req, res) => {
     name,
     email,
     phone,
+    entreprise,
+    poste,
+    status: status || "en attente",
+    dateEntretien,
   };
 
   data.push(newItem);
@@ -41,7 +54,6 @@ app.delete("/api/data/:id", (req, res) => {
   res.json({ message: "Élément supprimé avec succès." });
 });
 
-// Démarrer le serveur
 app.listen(port, () => {
   console.log(`Serveur démarré sur http://localhost:${port}`);
 });

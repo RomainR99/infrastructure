@@ -23,11 +23,15 @@ const candidatureShema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['en attente', 'accepter', 'refuser'],
+      enum: ['en attente', 'accepté', 'refusé'],
       default: 'en attente'
     },
     poste: {
       type: String,
+      required: true
+    },
+    dateEntretien: {
+      type: Date,               
       required: true
     },
     
