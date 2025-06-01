@@ -84,18 +84,7 @@ const CandidatureList = () => {
             <li key={candidature._id}>
               {candidature.entreprise} - {candidature.poste} - {candidature.status}
               {/* 🔄 Sélecteur de statut */}
-              <select
-                value={candidature.status}  // clé corrigée
-                onChange={(e) => updateStatus(candidature._id, e.target.value)}
-              >
-                {optionsStatus
-                  .filter((opt) => opt.value !== "") // on enlève "Tous" pour le select de mise à jour
-                  .map(({ label, value }) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-              </select>
+              
             </li>
           ))}
       </ul>
