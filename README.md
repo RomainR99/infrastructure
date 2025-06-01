@@ -28,12 +28,12 @@
 ## 🛠️ Installation
 
 ### 1. Backend
-```bash
+
 cd backend
 npm install
 npm run dev
 
-# Rendu Finale
+# Rendu final
 
 <img src="./src/node_frontend/src/assets/rendu finale1.png" alt="Image" width="300"/>
 <img src="./src/node_frontend/src/assets/rendu finale.png" alt="Image" width="300"/>
