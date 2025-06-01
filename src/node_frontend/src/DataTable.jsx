@@ -20,10 +20,12 @@ const DataTable = () => {
   const outsideClick = useRef(null);
   const itemsPerPage = 5;
 
+  // Réinitialiser la page lors d'une nouvelle recherche
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
 
+  // Gestion du clic extérieur pour fermer le mode édition
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (outsideClick.current && !outsideClick.current.contains(event.target)) {
@@ -36,6 +38,7 @@ const DataTable = () => {
     };
   }, []);
 
+  // Charger les données à l'initialisation
   useEffect(() => {
     axios.get("http://localhost:8000/api/candidatures")
       .then((response) => {
@@ -50,14 +53,18 @@ const DataTable = () => {
       });
   }, []);
 
+  // Pagination
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  // Recherche par poste
   const handleSearch = (event) => setSearchTerm(event.target.value);
 
+  // Gestion du formulaire d'ajout
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Ajouter une nouvelle candidature
   const handleAddClick = () => {
     if (
       !formData.entreprise || formData.entreprise.trim().length < 2 ||
@@ -90,7 +97,6 @@ const DataTable = () => {
     })
       .then((response) => {
         const newItem = response.data.data || response.data;
-        console.log("Item ajouté :", newItem);
         setData((prevData) => [...prevData, newItem]);
         setFormData({
           entreprise: "",
@@ -109,15 +115,18 @@ const DataTable = () => {
       });
   };
 
+  // Éditer une candidature : ouverture du mode édition
   const handleEditClick = (item) => {
     setEditId(item._id);
     setEditForm({ ...item });
   };
 
+  // Gestion du formulaire d'édition
   const handleEditChange = (e) => {
     setEditForm({ ...editForm, [e.target.name]: e.target.value });
   };
 
+  // Sauvegarder les modifications
   const handleEditSave = (id) => {
     axios.put(`http://localhost:8000/api/candidatures/${id}`, editForm)
       .then(() => {
@@ -133,6 +142,7 @@ const DataTable = () => {
       });
   };
 
+  // Supprimer une candidature
   const handleDelete = (id) => {
     axios.delete(`http://localhost:8000/api/candidatures/${id}`)
       .then(() => {
@@ -144,19 +154,23 @@ const DataTable = () => {
       });
   };
 
+  // Calcul des index pour la pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
 
+  // Filtrage des données par recherche
   const filteredItems = data.filter((item) =>
     item.poste && item.poste.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Découpage des données pour la page courante
   const filteredData = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
     <div className="container">
       {error && <div className="error-message">{error}</div>}
 
+      {/* Formulaire ajout */}
       <div className="add-container">
         <div className="info-container">
           <input
@@ -188,16 +202,20 @@ const DataTable = () => {
             onChange={handleInputChange}
           />
           <input
-            type="text"
+            type="tel"
             placeholder="Téléphone"
             name="phone"
             value={formData.phone}
             onChange={handleInputChange}
           />
-          <select name="status" value={formData.status} onChange={handleInputChange}>
+          <select
+            name="status"
+            value={formData.status}
+            onChange={handleInputChange}
+          >
             <option value="en attente">En attente</option>
-            <option value="accepté">Accepté</option>
-            <option value="refusé">Refusé</option>
+            <option value="acceptée">Acceptée</option>
+            <option value="refusée">Refusée</option>
           </select>
           <input
             type="date"
@@ -206,134 +224,196 @@ const DataTable = () => {
             onChange={handleInputChange}
           />
         </div>
-        <button className="add" onClick={handleAddClick}>Ajouter</button>
+        <button className="btn-add" onClick={handleAddClick}>
+          Ajouter
+        </button>
       </div>
 
-      <div className="search-table-container">
-        <input
-          className="search-input"
-          type="text"
-          placeholder="Recherche par poste"
-          value={searchTerm}
-          onChange={handleSearch}
-        />
-        <table ref={outsideClick}>
-          <thead>
-            <tr>
-              <th>Entreprise</th>
-              <th>Nom</th>
-              <th>Poste</th>
-              <th>Email</th>
-              <th>Téléphone</th>
-              <th>Statut</th>
-              <th>Date Entretien</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredData.map((item) => (
-              <tr key={item._id}>
-                <td>
-                  {editId === item._id ? (
-                    <input
-                      type="text"
-                      name="entreprise"
-                      value={editForm.entreprise}
-                      onChange={handleEditChange}
-                    />
-                  ) : item.entreprise}
-                </td>
-                <td>
-                  {editId === item._id ? (
-                    <input
-                      type="text"
-                      name="name"
-                      value={editForm.name}
-                      onChange={handleEditChange}
-                    />
-                  ) : item.name}
-                </td>
-                <td>
-                  {editId === item._id ? (
-                    <input
-                      type="text"
-                      name="poste"
-                      value={editForm.poste}
-                      onChange={handleEditChange}
-                    />
-                  ) : item.poste}
-                </td>
-                <td>
-                  {editId === item._id ? (
-                    <input
-                      type="email"
-                      name="email"
-                      value={editForm.email}
-                      onChange={handleEditChange}
-                    />
-                  ) : item.email}
-                </td>
-                <td>
-                  {editId === item._id ? (
-                    <input
-                      type="text"
-                      name="phone"
-                      value={editForm.phone}
-                      onChange={handleEditChange}
-                    />
-                  ) : item.phone}
-                </td>
-                <td>
-                  {editId === item._id ? (
-                    <select name="status" value={editForm.status} onChange={handleEditChange}>
-                      <option value="en attente">En attente</option>
-                      <option value="accepté">Accepté</option>
-                      <option value="refusé">Refusé</option>
-                    </select>
-                  ) : item.status}
-                </td>
-                <td>
-                  {editId === item._id ? (
-                    <input
-                      type="date"
-                      name="dateEntretien"
-                      value={editForm.dateEntretien ? editForm.dateEntretien.slice(0, 10) : ""}
-                      onChange={handleEditChange}
-                    />
-                  ) : (
-                    item.dateEntretien ? new Date(item.dateEntretien).toLocaleDateString() : ""
-                  )}
-                </td>
-                <td className="actions">
-                  {editId === item._id ? (
-                    <button className="save" onClick={() => handleEditSave(item._id)}>Sauvegarder</button>
-                  ) : (
-                    <button className="edit" onClick={() => handleEditClick(item)}>Modifier</button>
-                  )}
-                  <button className="delete" onClick={() => handleDelete(item._id)}>Supprimer</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Recherche */}
+      <input
+        type="text"
+        placeholder="Rechercher par poste"
+        value={searchTerm}
+        onChange={handleSearch}
+        className="search-input"
+      />
 
-        <div className="pagination">
-          {Array.from({ length: Math.ceil(filteredItems.length / itemsPerPage) }, (_, index) => (
-            <button
-              key={index + 1}
-              onClick={() => paginate(index + 1)}
-              className={currentPage === index + 1 ? "active" : ""}
-            >
-              {index + 1}
-            </button>
+      {/* Tableau */}
+      <table className="table">
+        <thead>
+          <tr>
+            <th>Entreprise</th>
+            <th>Nom</th>
+            <th>Poste</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Statut</th>
+            <th>Date entretien</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody ref={outsideClick}>
+          {filteredData.length === 0 && (
+            <tr>
+              <td colSpan="8" style={{ textAlign: "center" }}>
+                Aucune candidature trouvée
+              </td>
+            </tr>
+          )}
+          {filteredData.map((item) => (
+            <tr key={item._id}>
+              <td>
+                {editId === item._id ? (
+                  <input
+                    type="text"
+                    name="entreprise"
+                    value={editForm.entreprise || ""}
+                    onChange={handleEditChange}
+                  />
+                ) : (
+                  item.entreprise
+                )}
+              </td>
+              <td>
+                {editId === item._id ? (
+                  <input
+                    type="text"
+                    name="name"
+                    value={editForm.name || ""}
+                    onChange={handleEditChange}
+                  />
+                ) : (
+                  item.name
+                )}
+              </td>
+              <td>
+                {editId === item._id ? (
+                  <input
+                    type="text"
+                    name="poste"
+                    value={editForm.poste || ""}
+                    onChange={handleEditChange}
+                  />
+                ) : (
+                  item.poste
+                )}
+              </td>
+              <td>
+                {editId === item._id ? (
+                  <input
+                    type="email"
+                    name="email"
+                    value={editForm.email || ""}
+                    onChange={handleEditChange}
+                  />
+                ) : (
+                  item.email
+                )}
+              </td>
+              <td>
+                {editId === item._id ? (
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={editForm.phone || ""}
+                    onChange={handleEditChange}
+                  />
+                ) : (
+                  item.phone
+                )}
+              </td>
+              <td>
+                {editId === item._id ? (
+                  <select
+                    name="status"
+                    value={editForm.status || ""}
+                    onChange={handleEditChange}
+                  >
+                    <option value="en attente">En attente</option>
+                    <option value="acceptée">Acceptée</option>
+                    <option value="refusée">Refusée</option>
+                  </select>
+                ) : (
+                  item.status
+                )}
+              </td>
+              <td>
+                {editId === item._id ? (
+                  <input
+                    type="date"
+                    name="dateEntretien"
+                    value={
+                      editForm.dateEntretien
+                        ? editForm.dateEntretien.slice(0, 10)
+                        : ""
+                    }
+                    onChange={handleEditChange}
+                  />
+                ) : item.dateEntretien ? (
+                  new Date(item.dateEntretien).toLocaleDateString()
+                ) : (
+                  ""
+                )}
+              </td>
+              <td>
+                {editId === item._id ? (
+                  <>
+                    <button
+                      className="btn-save"
+                      onClick={() => handleEditSave(item._id)}
+                    >
+                      Sauvegarder
+                    </button>
+                    <button
+                      className="btn-cancel"
+                      onClick={() => setEditId(null)}
+                    >
+                      Annuler
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      className="btn-edit"
+                      onClick={() => handleEditClick(item)}
+                    >
+                      Modifier
+                    </button>
+                    <button
+                      className="btn-delete"
+                      onClick={() => handleDelete(item._id)}
+                    >
+                      Supprimer
+                    </button>
+                  </>
+                )}
+              </td>
+            </tr>
           ))}
-        </div>
+        </tbody>
+      </table>
+
+      {/* Pagination */}
+      <div className="pagination">
+        {Array.from(
+          { length: Math.ceil(filteredItems.length / itemsPerPage) },
+          (_, i) => i + 1
+        ).map((number) => (
+          <button
+            key={number}
+            onClick={() => paginate(number)}
+            className={number === currentPage ? "active" : ""}
+          >
+            {number}
+          </button>
+        ))}
       </div>
     </div>
   );
 };
 
 export default DataTable;
+
 
 
 

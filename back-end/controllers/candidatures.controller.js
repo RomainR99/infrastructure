@@ -2,27 +2,26 @@ import Candidature from '../models/candidatures.model.js';
 
 // ✅ Créer une nouvelle candidature
 export const createCandidature = async (req, res) => {
-    try {
-      const { entreprise, poste, email, statut, dateEntretien, name ,phone, } = req.body;
-  
-      const nouvelleCandidature = new Candidature({
-        entreprise,
-        poste,
-        email,
-        statut,
-        dateEntretien,
-        name,
-        phone
-      });
-  
-      const saved = await nouvelleCandidature.save();
-      res.status(201).json({ message: "Candidature ajoutée avec succès", data: saved });
-    } catch (err) {
-      console.error("Erreur lors de la création :", err);
-      res.status(500).json({ message: "Erreur lors de la création de la candidature", error: err.message });
-    }
-  };
-  
+  try {
+    const { entreprise, poste, email, status, dateEntretien, name, phone } = req.body;
+
+    const nouvelleCandidature = new Candidature({
+      entreprise,
+      poste,
+      email,
+      status,       // Utilisation correcte de "status"
+      dateEntretien,
+      name,
+      phone
+    });
+
+    const saved = await nouvelleCandidature.save();
+    res.status(201).json({ message: "Candidature ajoutée avec succès", data: saved });
+  } catch (err) {
+    console.error("Erreur lors de la création :", err);
+    res.status(500).json({ message: "Erreur lors de la création de la candidature", error: err.message });
+  }
+};
 
 // ✅ Lire les candidatures (filtrage via query si fourni)
 export const readCandidature = async (req, res) => {
@@ -64,7 +63,11 @@ export const updateCandidature = async (req, res) => {
       return res.status(404).json({ message: "Candidature non trouvée" });
     }
 
-    const updated = await Candidature.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
+    const updated = await Candidature.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true
+    });
+
     res.status(200).json({ message: "Candidature mise à jour", data: updated });
   } catch (err) {
     console.error("Erreur lors de la mise à jour :", err);
@@ -78,7 +81,7 @@ export const getStats = async (req, res) => {
     const statsAgg = await Candidature.aggregate([
       {
         $group: {
-          _id: "$statut",
+          _id: "$status",  // Utiliser "status" ici
           count: { $sum: 1 }
         }
       }
@@ -94,13 +97,13 @@ export const getStats = async (req, res) => {
     statsAgg.forEach(item => {
       stats.total += item.count;
       switch (item._id) {
-        case "En attente":
+        case "en attente":
           stats.enAttente = item.count;
           break;
-        case "Acceptée":
+        case "acceptée":
           stats.acceptees = item.count;
           break;
-        case "Refusée":
+        case "refusée":
           stats.refusees = item.count;
           break;
       }
@@ -112,5 +115,6 @@ export const getStats = async (req, res) => {
     res.status(500).json({ message: "Erreur lors de la récupération des statistiques", error: err.message });
   }
 };
+
 
   

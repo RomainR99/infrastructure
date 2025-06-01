@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const candidatureShema = mongoose.Schema(
+const candidatureSchema = mongoose.Schema(
   {
     entreprise: {
       type: String,
@@ -19,11 +19,11 @@ const candidatureShema = mongoose.Schema(
     phone: {
       type: String,
       required: true,
-      match: /^[0-9]{10}$/ // Validation pour un n°tel , doit etre de 10 chiffres
+      match: /^[0-9]{10}$/ // Validation pour un numéro de téléphone à 10 chiffres
     },
     status: {
       type: String,
-      enum: ['en attente', 'accepté', 'refusé'],
+      enum: ['en attente', 'acceptée', 'refusée'], // valeurs autorisées en minuscules
       default: 'en attente'
     },
     poste: {
@@ -34,13 +34,10 @@ const candidatureShema = mongoose.Schema(
       type: Date,               
       required: true
     },
-    
   },
   {
     timestamps: true // Ajoute createdAt et updatedAt automatiquement
   }
 );
 
-export default mongoose.model('candidatures', candidatureShema);
-
-//Le champ timestamps: true permet de générer automatiquement les champs createdAt et updatedAt //pour chaque document.
+export default mongoose.model('candidatures', candidatureSchema);
