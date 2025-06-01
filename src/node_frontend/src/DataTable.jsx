@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import './DataTable.css';
 
 const DataTable = () => {
   const [data, setData] = useState([]);
